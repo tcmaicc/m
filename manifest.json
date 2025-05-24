@@ -1,0 +1,17 @@
+{
+  "name": "中医问诊",
+  "short_name": "中医问诊",
+  "display": "standalone",
+  "scope": "/",
+  "start_url": "/",
+  "background_color": "#f5f5f5",
+  "prefer_related_applications": false,
+  "theme_color": "#4CAF50",
+  "icons": [
+    {
+      "src": "icon.png",
+      "type": "image/png",
+	  "sizes": "144x144"
+    }
+  ]
+}
