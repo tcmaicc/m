@@ -16,7 +16,9 @@ export async function onRequest({
 	}
 
 	const url = new URL(request.url);
-	const targetUrl = `https://api.tcmai.cc${url.pathname}${url.search}`;
+	const path = url.searchParams.get("url") || "/";
+	const targetUrl = `https://api.tcmai.cc${path}`;
+	//const targetUrl = `https://api.tcmai.cc${url.pathname}${url.search}`;
 
 	const headers = new Headers(request.headers);
 	headers.delete("host");
