@@ -1,9 +1,7 @@
 export async function onRequest(context) {
   const { request } = context;
-  const url = new URL(request.url);
 
-  const targetUrl = `https://api.tcmai.cc${url.pathname}${url.search}`;
-
+  // 🔥 必须第一步就拦截 OPTIONS 请求！
   if (request.method === 'OPTIONS') {
     return new Response(null, {
       status: 204,
@@ -14,6 +12,10 @@ export async function onRequest(context) {
       },
     });
   }
+
+  // 正常请求处理
+  const url = new URL(request.url);
+  const targetUrl = `https://api.tcmai.cc${url.pathname}${url.search}`;
 
   const newHeaders = new Headers(request.headers);
   newHeaders.delete('host');
