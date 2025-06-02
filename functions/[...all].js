@@ -1,21 +1,19 @@
-export async function onRequest(context) {
-  const { request } = context;
+export async function onRequest({ request }) {
+  const url = new URL(request.url);
+  const targetUrl = `https://api.tcmai.cc${url.pathname}${url.search}`;
 
-  // 🔥 必须第一步就拦截 OPTIONS 请求！
+  // ✅ 处理预检请求
   if (request.method === 'OPTIONS') {
     return new Response(null, {
       status: 204,
       headers: {
-        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Origin': '*', // 也可以写你的前端域名
         'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS,PATCH',
-        'Access-Control-Allow-Headers': '*',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+        'Access-Control-Max-Age': '86400',
       },
     });
   }
-
-  // 正常请求处理
-  const url = new URL(request.url);
-  const targetUrl = `https://api.tcmai.cc${url.pathname}${url.search}`;
 
   const newHeaders = new Headers(request.headers);
   newHeaders.delete('host');
@@ -35,7 +33,7 @@ export async function onRequest(context) {
   const responseHeaders = new Headers(response.headers);
   responseHeaders.set('Access-Control-Allow-Origin', '*');
   responseHeaders.set('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS,PATCH');
-  responseHeaders.set('Access-Control-Allow-Headers', '*');
+  responseHeaders.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
   const clonedBody = await response.arrayBuffer();
 
