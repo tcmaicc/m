@@ -1,0 +1,1 @@
+System.register(["./index-legacy-BFEciYk3.js"],(function(e,t){"use strict";var n,i;return{setters:[e=>{n=e.o,i=e.g}],execute:function(){e("default",{__name:"index",setup:e=>(n((async()=>{const e=i().proxy;await e.Biz.CheckLogin()&&e.Biz.JumpToHome()})),(e,t)=>null)})}}}));
