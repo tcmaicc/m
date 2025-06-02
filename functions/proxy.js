@@ -18,7 +18,6 @@ export async function onRequest({
 	const url = new URL(request.url);
 	const path = url.searchParams.get("url") || "/";
 	const targetUrl = `https://api.tcmai.cc${path}`;
-	//const targetUrl = `https://api.tcmai.cc${url.pathname}${url.search}`;
 
 	const headers = new Headers(request.headers);
 	headers.delete("host");
@@ -34,14 +33,19 @@ export async function onRequest({
 		redirect: "manual"
 	});
 
+	// 复制目标响应头，并加上 CORS 头
 	const responseHeaders = new Headers(response.headers);
 	for (const [key, value] of Object.entries(corsHeaders)) {
 		responseHeaders.set(key, value);
 	}
 
-	const responseBody = await response.arrayBuffer();
+	// 如果是 SSE，强制确保 content-type 正确
+	if (responseHeaders.get("content-type")?.startsWith("text/event-stream")) {
+		responseHeaders.set("Content-Type", "text/event-stream");
+	}
 
-	return new Response(responseBody, {
+	// 不使用 arrayBuffer，而是直接转发原始 stream
+	return new Response(response.body, {
 		status: response.status,
 		statusText: response.statusText,
 		headers: responseHeaders
