@@ -21,9 +21,9 @@ export async function onRequest({
 
 	const headers = new Headers(request.headers);
 	headers.delete("host");
-
-	const proxyPrefix = `${url.host}${url.pathname}?url=`;	
-	headers.set('X-Forwarded-Proto-Cloudflare', proxyPrefix);
+	
+	headers.set('x-forwarded-Proto-cloudflare', url.protocol.replace(':', ''));
+	headers.set('x-forwarded-host-cloudflare', `${url.host}${url.pathname}?url=`);
 
 	const body = (request.method === "GET" || request.method === "HEAD") ?
 		null :
