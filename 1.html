@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>医智诊 - 中医AI舌诊分析</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4CAF50;
+            --primary-dark: #388E3C;
+            --primary-light: #C8E6C9;
+            --secondary-color: #FF9800;
+            --text-color: #333;
+            --text-light: #666;
+            --text-white: #fff;
+            --bg-light: #F9FCF8;
+            --border-color: #E0F2E9;
+            --box-shadow: 0 4px 12px rgba(76, 175, 80, 0.15);
+            --border-radius: 12px;
+            --mobile-padding: 16px;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
+        }
+        
+        body {
+            background-color: #f8fcf9;
+            color: var(--text-color);
+            line-height: 1.6;
+            font-size: 15px;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 0 var(--mobile-padding);
+        }
+        
+        /* 移动端导航栏 */
+        header {
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            padding: 12px var(--mobile-padding);
+        }
+        
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .mobile-nav {
+            display: flex;
+            align-items: center;
+            width: 100%;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+        }
+        
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary-color), #3da242);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 22px;
+            box-shadow: 0 3px 8px rgba(76, 175, 80, 0.3);
+        }
+        
+        .logo-text {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary-dark);
+            letter-spacing: 1px;
+        }
+        
+        .menu-btn {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 5px;
+            padding: 8px;
+            background: var(--bg-light);
+            border-radius: 50%;
+        }
+        
+        .menu-line {
+            height: 3px;
+            background: var(--primary-color);
+            border-radius: 2px;
+        }
+        
+        .menu-line:nth-child(1) {
+            width: 20px;
+        }
+        
+        .menu-line:nth-child(2) {
+            width: 24px;
+        }
+        
+        .menu-line:nth-child(3) {
+            width: 16px;
+        }
+        
+        .nav-search {
+            width: 40px;
+            height: 40px;
+            background: var(--primary-light);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-color);
+            margin: 0 10px;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #8BC34A, var(--primary-color));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        /* 底部导航栏 */
+        .mobile-tabbar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            box-shadow: 0 -3px 10px rgba(0,0,0,0.05);
+            z-index: 1000;
+        }
+        
+        .tab-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            color: var(--text-light);
+            font-size: 12px;
+            flex: 1;
+        }
+        
+        .tab-item.active {
+            color: var(--primary-color);
+        }
+        
+        .tab-icon {
+            font-size: 20px;
+            position: relative;
+        }
+        
+        .tab-badge {
+            position: absolute;
+            top: -6px;
+            right: -12px;
+            background: #ff5722;
+            color: white;
+            font-size: 11px;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* 主要内容区域 */
+        main {
+            padding-bottom: 70px; /* 为底部导航留出空间 */
+        }
+        
+        /* 搜索区域 */
+        .search-bar {
+            background: white;
+            border-radius: 50px;
+            padding: 0 20px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            box-shadow: var(--box-shadow);
+            margin: 15px 0 20px;
+        }
+        
+        .search-icon {
+            color: var(--primary-color);
+            font-size: 18px;
+            margin-right: 12px;
+        }
+        
+        .search-input {
+            border: none;
+            outline: none;
+            font-size: 16px;
+            flex: 1;
+            background: transparent;
+        }
+        
+        .search-input::placeholder {
+            color: #aaa;
+        }
+        
+        /* 功能入口区 */
+        .functions-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .function-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 15px 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+        
+        .function-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--primary-light);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+        
+        .function-name {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-color);
+        }
+        
+        /* 广告轮播 */
+        .banner-container {
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            margin: 20px 0;
+            position: relative;
+            box-shadow: var(--box-shadow);
+            height: 140px;
+        }
+        
+        .banner-slide {
+            height: 140px;
+            background: linear-gradient(135deg, var(--primary-color), #8BC34A);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 20px;
+            color: white;
+        }
+        
+        .banner-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        
+        .banner-desc {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 15px;
+        }
+        
+        .banner-btn {
+            display: inline-block;
+            background: white;
+            color: var(--primary-color);
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: bold;
+            width: max-content;
+        }
+        
+        .banner-pagination {
+            position: absolute;
+            bottom: 12px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+        }
+        
+        .pagination-dot {
+            width: 8px;
+            height: 8px;
+            background: rgba(255,255,255,0.5);
+            border-radius: 50%;
+        }
+        
+        .pagination-dot.active {
+            background: white;
+        }
+        
+        /* 舌诊上传模块 */
+        .section-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--primary-dark);
+            margin: 25px 0 18px;
+            position: relative;
+            padding-left: 10px;
+        }
+        
+        .section-title::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 18px;
+            background: var(--primary-color);
+            border-radius: 2px;
+        }
+        
+        .upload-card {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--box-shadow);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .upload-title {
+            font-size: 18px;
+            color: var(--primary-dark);
+            margin: 10px 0;
+        }
+        
+        .upload-desc {
+            font-size: 14px;
+            color: var(--text-light);
+            margin-bottom: 15px;
+        }
+        
+        .upload-container {
+            position: relative;
+            width: 100%;
+            max-width: 300px;
+            height: 180px;
+            background: var(--primary-light);
+            border-radius: var(--border-radius);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+        
+        .upload-icon {
+            font-size: 48px;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+        
+        .upload-btn {
+            background: var(--primary-color);
+            color: white;
+            padding: 10px 25px;
+            border-radius: 25px;
+            font-weight: 500;
+            font-size: 16px;
+            display: inline-block;
+            box-shadow: 0 4px 10px rgba(76, 175, 80, 0.3);
+            margin-top: 10px;
+        }
+        
+        .upload-hint {
+            font-size: 12px;
+            color: #888;
+            margin-top: 8px;
+        }
+        
+        .or-divider {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+            color: #888;
+            font-size: 14px;
+            width: 90%;
+            max-width: 300px;
+        }
+        
+        .or-divider::before,
+        .or-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #ddd;
+        }
+        
+        .or-divider span {
+            padding: 0 15px;
+        }
+        
+        /* 专家推荐 */
+        .experts-slider {
+            display: flex;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            gap: 15px;
+            padding: 0 0 10px;
+            scrollbar-width: none;
+            margin-bottom: 20px;
+        }
+        
+        .experts-slider::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .expert-card {
+            min-width: 260px;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            overflow: hidden;
+            scroll-snap-align: start;
+            flex-shrink: 0;
+        }
+        
+        .expert-header {
+            padding: 20px;
+            text-align: center;
+            background: linear-gradient(to right, #4CAF50, #8BC34A);
+            position: relative;
+        }
+        
+        .expert-img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 3px solid white;
+            object-fit: cover;
+            margin-bottom: 15px;
+        }
+        
+        .expert-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 5px;
+        }
+        
+        .expert-title {
+            color: rgba(255,255,255,0.85);
+            font-size: 13px;
+        }
+        
+        .expert-body {
+            padding: 15px;
+        }
+        
+        .expert-desc {
+            color: var(--text-light);
+            font-size: 13px;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+        
+        .expert-badge {
+            display: inline-block;
+            background: #e8f5e9;
+            color: var(--primary-dark);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-right: 8px;
+            margin-bottom: 8px;
+        }
+        
+        /* 精选案例 */
+        .cases-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .case-card {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: var(--box-shadow);
+        }
+        
+        .case-img {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+        }
+        
+        .case-content {
+            padding: 12px;
+        }
+        
+        .case-diagnosis {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--primary-dark);
+            margin-bottom: 5px;
+        }
+        
+        .case-result {
+            font-size: 12px;
+            color: var(--text-light);
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        /* 科普知识 */
+        .knowledge-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .knowledge-card {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--box-shadow);
+            display: flex;
+            gap: 15px;
+        }
+        
+        .knowledge-icon {
+            font-size: 32px;
+            color: var(--primary-color);
+            min-width: 40px;
+        }
+        
+        .knowledge-content {
+            flex: 1;
+        }
+        
+        .knowledge-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--primary-dark);
+            margin-bottom: 8px;
+        }
+        
+        .knowledge-text {
+            color: var(--text-light);
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        
+        /* 活动推广 */
+        .promo-card {
+            background: linear-gradient(135deg, #4CAF50, #388E3C);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .promo-icon {
+            font-size: 40px;
+            color: white;
+            opacity: 0.9;
+        }
+        
+        .promo-content {
+            flex: 1;
+        }
+        
+        .promo-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .promo-text {
+            font-size: 13px;
+            opacity: 0.9;
+            margin-bottom: 10px;
+        }
+        
+        .promo-btn {
+            display: inline-block;
+            background: white;
+            color: var(--primary-color);
+            padding: 6px 18px;
+            border-radius: 18px;
+            font-weight: bold;
+            font-size: 13px;
+        }
+        
+        /* 用户评价 */
+        .testimonial-card {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--box-shadow);
+            position: relative;
+            margin-bottom: 20px;
+        }
+        
+        .testimonial-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+        
+        .user-avatar.small {
+            width: 48px;
+            height: 48px;
+            font-size: 20px;
+        }
+        
+        .user-info h4 {
+            font-size: 16px;
+            color: var(--primary-dark);
+        }
+        
+        .user-info p {
+            font-size: 13px;
+            color: var(--text-light);
+        }
+        
+        .testimonial-text {
+            font-size: 15px;
+            color: var(--text-color);
+            line-height: 1.6;
+            position: relative;
+            padding-left: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .testimonial-text::before {
+            content: '"';
+            position: absolute;
+            left: 0;
+            top: 0;
+            font-size: 32px;
+            color: var(--primary-light);
+            line-height: 1;
+        }
+        
+        .testimonial-stars {
+            color: #FF9800;
+            font-size: 16px;
+            display: flex;
+            gap: 2px;
+        }
+        
+        /* App下载入口 */
+        .download-cta {
+            background: linear-gradient(to right, #388E3C, #4CAF50);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 20px rgba(76, 175, 80, 0.3);
+        }
+        
+        .app-info {
+            flex: 1;
+        }
+        
+        .app-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .app-desc {
+            font-size: 13px;
+            opacity: 0.9;
+            margin-bottom: 15px;
+        }
+        
+        .qr-code {
+            width: 80px;
+            height: 80px;
+            background: white;
+            border-radius: 8px;
+            padding: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: var(--text-color);
+            text-align: center;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <!-- 移动端顶部导航 -->
+    <header>
+        <div class="mobile-nav">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-leaf"></i>
+                </div>
+                <div class="logo-text">医智诊</div>
+            </div>
+            
+            <div class="nav-search">
+                <i class="fas fa-search"></i>
+            </div>
+            
+            <div class="user-avatar">
+                <i class="fas fa-user"></i>
+            </div>
+        </div>
+    </header>
+    
+    <!-- 主要内容区域 -->
+    <main>
+        <div class="container">
+            <!-- 搜索区域 -->
+            <div class="search-bar">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" class="search-input" placeholder="搜索健康知识、症状、专家...">
+            </div>
+            
+            <!-- 功能入口区 -->
+            <div class="functions-grid">
+                <div class="function-item">
+                    <div class="function-icon">
+                        <i class="fas fa-stethoscope"></i>
+                    </div>
+                    <div class="function-name">舌诊</div>
+                </div>
+                <div class="function-item">
+                    <div class="function-icon">
+                        <i class="fas fa-book-medical"></i>
+                    </div>
+                    <div class="function-name">问诊</div>
+                </div>
+                <div class="function-item">
+                    <div class="function-icon">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <div class="function-name">预约</div>
+                </div>
+                <div class="function-item">
+                    <div class="function-icon">
+                        <i class="fas fa-newspaper"></i>
+                    </div>
+                    <div class="function-name">健康圈</div>
+                </div>
+                <div class="function-item">
+                    <div class="function-icon">
+                        <i class="fas fa-heartbeat"></i>
+                    </div>
+                    <div class="function-name">体质</div>
+                </div>
+                <div class="function-item">
+                    <div class="function-icon">
+                        <i class="fas fa-pills"></i>
+                    </div>
+                    <div class="function-name">方剂</div>
+                </div>
+                <div class="function-item">
+                    <div class="function-icon">
+                        <i class="fas fa-apple-alt"></i>
+                    </div>
+                    <div class="function-name">食疗</div>
+                </div>
+                <div class="function-item">
+                    <div class="function-icon">
+                        <i class="fas fa-ellipsis-h"></i>
+                    </div>
+                    <div class="function-name">更多</div>
+                </div>
+            </div>
+            
+            <!-- 广告轮播 -->
+            <div class="banner-container">
+                <div class="banner-slide">
+                    <div class="banner-title">AI舌诊限时免费</div>
+                    <div class="banner-desc">上传舌像即可获取专业中医报告</div>
+                    <div class="banner-btn">立即体验</div>
+                </div>
+                <div class="banner-pagination">
+                    <div class="pagination-dot active"></div>
+                    <div class="pagination-dot"></div>
+                    <div class="pagination-dot"></div>
+                </div>
+            </div>
+            
+            <!-- 舌诊上传模块 -->
+            <h2 class="section-title">舌诊分析</h2>
+            <div class="upload-card">
+                <div class="upload-title">上传舌面照片</div>
+                <div class="upload-desc">分析舌质、舌苔、颜色及形态，提供中医辨证依据</div>
+                
+                <div class="upload-container">
+                    <i class="fas fa-camera upload-icon"></i>
+                    <div>点击拍照或选择照片</div>
+                </div>
+                
+                <div class="upload-btn">开始分析</div>
+                <div class="upload-hint">专业AI分析，识别准确率98%</div>
+                
+                <div class="or-divider">
+                    <span>或</span>
+                </div>
+                
+                <div class="upload-title">上传舌底照片</div>
+                <div class="upload-desc">分析舌下络脉，辅助瘀血诊断和体质辨识</div>
+                
+                <div class="upload-container">
+                    <i class="fas fa-microscope upload-icon"></i>
+                    <div>点击拍照或选择照片</div>
+                </div>
+                
+                <div class="upload-btn">开始分析</div>
+                <div class="upload-hint">专业AI分析，识别准确率98%</div>
+            </div>
+            
+            <!-- 专家推荐 -->
+            <h2 class="section-title">中医专家团队</h2>
+            <div class="experts-slider">
+                <div class="expert-card">
+                    <div class="expert-header">
+                        <img src="https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&q=80&w=900" alt="中医专家" class="expert-img">
+                        <h3 class="expert-name">张伯礼</h3>
+                        <p class="expert-title">国医大师、中医学教授</p>
+                    </div>
+                    <div class="expert-body">
+                        <p class="expert-desc">从事中医临床、教学和科研工作40余年，擅长内科杂病和亚健康调理</p>
+                        <div>
+                            <span class="expert-badge">中医内科</span>
+                            <span class="expert-badge">体质调理</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="expert-card">
+                    <div class="expert-header">
+                        <img src="https://images.unsplash.com/photo-1622253692010-333f2d603622?auto=format&fit=crop&q=80&w=900" alt="中医专家" class="expert-img">
+                        <h3 class="expert-name">王振国</h3>
+                        <p class="expert-title">主任医师、中医博士</p>
+                    </div>
+                    <div class="expert-body">
+                        <p class="expert-desc">中医人工智能研究专家，擅长中医四诊合参的数字化分析</p>
+                        <div>
+                            <span class="expert-badge">AI舌诊</span>
+                            <span class="expert-badge">健康管理</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 精选案例 -->
+            <h2 class="section-title">精选舌诊案例</h2>
+            <div class="cases-grid">
+                <div class="case-card">
+                    <img src="https://images.unsplash.com/photo-1581092795360-fd1ca04c1c9a?auto=format&fit=crop&q=80&w=900" alt="中医舌诊案例" class="case-img">
+                    <div class="case-content">
+                        <div class="case-diagnosis">肝胃郁热证</div>
+                        <div class="case-result">苔黄厚腻、舌质红，证属肝胃郁热，湿热蕴结</div>
+                    </div>
+                </div>
+                
+                <div class="case-card">
+                    <img src="https://images.unsplash.com/photo-1581092674901-00e74f5bcd9d?auto=format&fit=crop&q=80&w=900" alt="中医舌诊案例" class="case-img">
+                    <div class="case-content">
+                        <div class="case-diagnosis">脾肾阳虚证</div>
+                        <div class="case-result">舌质淡白胖嫩，苔白滑，边有齿痕，脾肾阳虚</div>
+                    </div>
+                </div>
+                
+                <div class="case-card">
+                    <img src="https://images.unsplash.com/photo-1581092795433-06a5dc2d593b?auto=format&fit=crop&q=80&w=900" alt="中医舌诊案例" class="case-img">
+                    <div class="case-content">
+                        <div class="case-diagnosis">心肾不交证</div>
+                        <div class="case-result">舌红少苔，舌尖红点明显，心肾不交，阴虚火旺</div>
+                    </div>
+                </div>
+                
+                <div class="case-card">
+                    <img src="https://images.unsplash.com/photo-1581092345555-c3a9b2675084?auto=format&fit=crop&q=80&w=900" alt="中医舌诊案例" class="case-img">
+                    <div class="case-content">
+                        <div class="case-diagnosis">气血两虚证</div>
+                        <div class="case-result">舌淡苔薄白，舌体瘦小，气血两虚之证</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 科普知识 -->
+            <h2 class="section-title">中医健康百科</h2>
+            <div class="knowledge-grid">
+                <div class="knowledge-card">
+                    <div class="knowledge-icon">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <div class="knowledge-content">
+                        <div class="knowledge-title">舌象与体质辨识</div>
+                        <div class="knowledge-text">通过舌质舌苔的变化，辨别九种中医体质类型...</div>
+                    </div>
+                </div>
+                
+                <div class="knowledge-card">
+                    <div class="knowledge-icon">
+                        <i class="fas fa-apple-alt"></i>
+                    </div>
+                    <div class="knowledge-content">
+                        <div class="knowledge-title">夏季养生指南</div>
+                        <div class="knowledge-text">顺应时节变化，中医教你夏季如何清热祛湿...</div>
+                    </div>
+                </div>
+                
+                <div class="knowledge-card">
+                    <div class="knowledge-icon">
+                        <i class="fas fa-bed"></i>
+                    </div>
+                    <div class="knowledge-content">
+                        <div class="knowledge-title">失眠的中医调理</div>
+                        <div class="knowledge-text">告别失眠困扰，从中医角度教你安神助眠方法...</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 活动推广 -->
+            <div class="promo-card">
+                <div class="promo-icon">
+                    <i class="fas fa-gift"></i>
+                </div>
+                <div class="promo-content">
+                    <div class="promo-title">邀请好友领问诊金</div>
+                    <div class="promo-text">每邀请一位好友得15元问诊金，可累计使用</div>
+                    <div class="promo-btn">立即参与</div>
+                </div>
+            </div>
+            
+            <!-- 用户评价 -->
+            <h2 class="section-title">用户真实评价</h2>
+            <div class="testimonial-card">
+                <div class="testimonial-header">
+                    <div class="user-avatar small">李</div>
+                    <div class="user-info">
+                        <h4>李女士 · 32岁</h4>
+                        <p>使用医智诊3个月 · 完成5次舌诊</p>
+                    </div>
+                </div>
+                <div class="testimonial-text">
+                    第一次尝试AI舌诊结果很准确！分析报告与我在中医院看的结果基本一致，而且更方便。坚持调理两个月后疲劳感明显减轻了！
+                </div>
+                <div class="testimonial-stars">
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                </div>
+            </div>
+            
+            <!-- App下载入口 -->
+            <div class="download-cta">
+                <div class="promo-icon">
+                    <i class="fas fa-mobile-alt"></i>
+                </div>
+                <div class="app-info">
+                    <div class="app-title">下载医智诊App</div>
+                    <div class="app-desc">完整中医健康管理功能，随时随地舌诊分析</div>
+                    <div class="banner-btn">免费下载</div>
+                </div>
+                <div class="qr-code">
+                    <div>APP<br>下载<br>二维码</div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- 移动端底部导航 -->
+    <nav class="mobile-tabbar">
+        <div class="tab-item active">
+            <div class="tab-icon">
+                <i class="fas fa-home"></i>
+            </div>
+            <div>首页</div>
+        </div>
+        
+        <div class="tab-item">
+            <div class="tab-icon">
+                <i class="fas fa-comment-medical"></i>
+            </div>
+            <div>问诊</div>
+        </div>
+        
+        <div class="tab-item">
+            <div class="tab-icon">
+                <i class="fas fa-book"></i>
+            </div>
+            <div>健康</div>
+        </div>
+        
+        <div class="tab-item">
+            <div class="tab-icon">
+                <i class="fas fa-user-md"></i>
+                <div class="tab-badge">3</div>
+            </div>
+            <div>医师</div>
+        </div>
+        
+        <div class="tab-item">
+            <div class="tab-icon">
+                <i class="fas fa-user"></i>
+            </div>
+            <div>我的</div>
+        </div>
+    </nav>
+</body>
+</html>

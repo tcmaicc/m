@@ -17,7 +17,7 @@ export async function onRequest({
 
 	const url = new URL(request.url);
 	const path = url.searchParams.get("url") || "/";
-	const targetUrl = `https://api.tcmai.cc${path}`;
+	const targetUrl = `https://api.imtcm.com${path}`;
 
 	const headers = new Headers(request.headers);
 	headers.delete("host");
