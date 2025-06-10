@@ -1,0 +1,1 @@
+System.register(["./mermaid.core-legacy-BKv3Kh4x.js"],(function(t,e){"use strict";var s;return{setters:[t=>{s=t._}],execute:function(){t("I",class{constructor(t){this.init=t,this.records=this.init()}static#t=(()=>s(this,"ImperativeState"))();reset(){this.records=this.init()}})}}}));
